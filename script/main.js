@@ -18,7 +18,6 @@ function applyTheme(mode) {
   root.style.setProperty("--bg", theme.background || "#1a1a2e");
   root.style.setProperty("--text", theme.text || "#ffffff");
 
-  // Update toggle icon
   const btn = document.getElementById("theme-toggle");
   if (btn) btn.textContent = mode === "dark" ? "☀️" : "🌙";
 }
@@ -57,21 +56,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   applyTheme(currentMode);
   createThemeToggle();
 
-  // Set music source
   const audio = document.querySelector(".song");
   if (audio && CONFIG.music) {
     audio.querySelector("source").src = CONFIG.music;
     audio.load();
-    audio.volume = 0; // start silent
+    audio.volume = 0;
   }
 
-  // Create music toggle
   createMusicToggle(audio);
 
-  // Determine unique component types
   const types = [...new Set(CONFIG.sections.map((s) => s.type))];
 
-  // Dynamically load component scripts
   for (const type of types) {
     try {
       await loadScript(`./script/components/${type}.js`);
@@ -80,26 +75,82 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Render all sections
   const container = document.querySelector(".container");
   const rendered = [];
 
   CONFIG.sections.forEach((section) => {
     const comp = window.Components && window.Components[section.type];
-    if (!comp) {
-      console.warn(`Component "${section.type}" not found, skipping.`);
-      return;
-    }
+    if (!comp) return;
     const el = comp.render(container, section, CONFIG);
     rendered.push({ el, comp, section });
   });
 
-  // Try autoplay with fallback
-  tryAutoPlay(audio);
-
-  // Start animations immediately
-  buildTimeline(rendered);
+  // 🔥 ENTER EXPERIENCE overlay
+  createEnterExperience(audio, rendered);
 });
+
+// ── ENTER EXPERIENCE ─────────────────────────────────────────────
+function createEnterExperience(audio, rendered) {
+  const overlay = document.createElement("div");
+
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "linear-gradient(135deg, #0f172a, #1e293b)";
+  overlay.style.display = "flex";
+  overlay.style.flexDirection = "column";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.zIndex = "10000";
+  overlay.style.color = "#fff";
+  overlay.style.textAlign = "center";
+
+  const title = document.createElement("h1");
+  title.textContent = "Welcome";
+  title.style.marginBottom = "10px";
+
+  const subtitle = document.createElement("p");
+  subtitle.textContent = "A small experience awaits you ✨";
+  subtitle.style.marginBottom = "30px";
+  subtitle.style.opacity = "0.8";
+
+  const btn = document.createElement("button");
+  btn.textContent = "Enter Experience";
+  btn.style.fontSize = "18px";
+  btn.style.padding = "15px 30px";
+  btn.style.border = "none";
+  btn.style.borderRadius = "12px";
+  btn.style.background = "#15a1ed";
+  btn.style.color = "#fff";
+  btn.style.cursor = "pointer";
+  btn.style.transition = "0.3s";
+
+  btn.onmouseenter = () => (btn.style.transform = "scale(1.05)");
+  btn.onmouseleave = () => (btn.style.transform = "scale(1)");
+
+  btn.addEventListener("click", () => {
+    if (audio) {
+      audio.play().then(() => {
+        fadeInAudio(audio, 0.8, 1500);
+      }).catch(() => {});
+    }
+
+    overlay.style.opacity = "0";
+    overlay.style.transition = "opacity 0.8s ease";
+
+    setTimeout(() => {
+      overlay.remove();
+      buildTimeline(rendered);
+    }, 800);
+  });
+
+  overlay.appendChild(title);
+  overlay.appendChild(subtitle);
+  overlay.appendChild(btn);
+  document.body.appendChild(overlay);
+}
 
 // ── Timeline Builder ─────────────────────────────────────────────
 function buildTimeline(rendered) {
@@ -133,7 +184,6 @@ function buildTimeline(rendered) {
 
   deferredExits.forEach((fn) => fn());
 
-  // Replay button
   const replayBtn = document.getElementById("replay");
   if (replayBtn) {
     replayBtn.addEventListener("click", () => tl.restart());
@@ -141,27 +191,6 @@ function buildTimeline(rendered) {
 }
 
 // ── Music Helpers ────────────────────────────────────────────────
-function tryAutoPlay(audio) {
-  if (!audio) return;
-
-  audio.muted = true;
-
-  audio.play()
-    .then(() => {
-      fadeInAudio(audio, 0.8, 1500);
-      audio.muted = false;
-    })
-    .catch(() => {
-      const startOnInteraction = () => {
-        audio.play().then(() => {
-          fadeInAudio(audio, 0.8, 1500);
-        }).catch(() => {});
-        document.removeEventListener("click", startOnInteraction);
-      };
-      document.addEventListener("click", startOnInteraction, { once: true });
-    });
-}
-
 function fadeInAudio(audio, targetVolume = 1, duration = 1000) {
   const steps = 20;
   const stepTime = duration / steps;
@@ -180,7 +209,6 @@ function createMusicToggle(audio) {
   const btn = document.createElement("button");
   btn.id = "music-toggle";
   btn.textContent = "🔊";
-  btn.title = "Toggle music";
 
   btn.style.position = "fixed";
   btn.style.bottom = "20px";
@@ -200,4 +228,4 @@ function createMusicToggle(audio) {
   });
 
   document.body.appendChild(btn);
-}
+                  }
