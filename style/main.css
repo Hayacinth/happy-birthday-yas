@@ -479,3 +479,11 @@ body {
 .swal2-popup {
   border-radius: 16px !important;
 }
+
+.replay-btn {
+  cursor: pointer;
+  z-index: 3;
+  color: var(--accent) !important;
+  font-weight: 500 !important;
+  transition: opacity 0.3s ease;
+}
