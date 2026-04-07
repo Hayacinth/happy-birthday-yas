@@ -7,7 +7,7 @@
       div.className = "section section-closing";
       div.innerHTML = `
         <p class="closing-text">${
-          section.text || "Okay, now come back and tell me if you liked it."
+          section.text || "Okay, i hope and you liked it."
         }</p>
         <p class="replay-btn" id="replay">${
           section.replayText || "Or click, if you want to watch it again."
