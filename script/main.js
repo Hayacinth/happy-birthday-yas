@@ -142,7 +142,7 @@ function createEnterExperience(audio, rendered) {
 
     setTimeout(() => {
       overlay.remove();
-      buildTimeline(rendered);
+      buildTimeline(audio, rendered);
     }, 800);
   });
 
@@ -153,7 +153,7 @@ function createEnterExperience(audio, rendered) {
 }
 
 // ── Timeline Builder ─────────────────────────────────────────────
-function buildTimeline(rendered) {
+function buildTimeline(audio, rendered) {
   const tl = gsap.timeline();
 
   tl.to(".container", { duration: 0.6, visibility: "visible" });
@@ -186,7 +186,17 @@ function buildTimeline(rendered) {
 
   const replayBtn = document.getElementById("replay");
   if (replayBtn) {
-    replayBtn.addEventListener("click", () => tl.restart());
+    replayBtn.addEventListener("click", () => {
+      // Restart the timeline
+      tl.restart();
+      // Restart and play the audio
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().then(() => {
+          fadeInAudio(audio, 0.8, 1500);
+        }).catch(() => {});
+      }
+    });
   }
 }
 
